@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Крестики-нолики</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="game-container">
+        <h1>Крестики-нолики</h1>
+        <div class="status">Ход: X</div>
+        <div class="board">
+            <div class="cell" data-index="0"></div>
+            <div class="cell" data-index="1"></div>
+            <div class="cell" data-index="2"></div>
+            <div class="cell" data-index="3"></div>
+            <div class="cell" data-index="4"></div>
+            <div class="cell" data-index="5"></div>
+            <div class="cell" data-index="6"></div>
+            <div class="cell" data-index="7"></div>
+            <div class="cell" data-index="8"></div>
+        </div>
+        <button class="reset-btn">Новая игра</button>
+    </div>
+
+    <!-- Добавленный блок для полноэкранного сообщения -->
+    <div class="win-overlay hidden">
+        <div class="win-message">
+            <h2 class="win-text"></h2>
+            <button class="win-restart-btn">Играть снова</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const cells = document.querySelectorAll('.cell');
+            const statusDisplay = document.querySelector('.status');
+            const resetButton = document.querySelector('.reset-btn');
+            const winOverlay = document.querySelector('.win-overlay');
+            const winText = document.querySelector('.win-text');
+            const winRestartBtn = document.querySelector('.win-restart-btn');
+
+            let gameActive = true;
+            let currentPlayer = "X";
+            let gameState = ["", "", "", "", "", "", "", "", ""];
+
+            const winningConditions = [
+                [0, 1, 2],
+                [3, 4, 5],
+                [6, 7, 8],
+                [0, 3, 6],
+                [1, 4, 7],
+                [2, 5, 8],
+                [0, 4, 8],
+                [2, 4, 6]
+            ];
+
+            function handleCellClick(clickedCellEvent) {
+                const clickedCell = clickedCellEvent.target;
+                const clickedCellIndex = parseInt(clickedCell.getAttribute('data-index'));
+
+                if (gameState[clickedCellIndex] !== "" || !gameActive) {
+                    return;
+                }
+
+                handleCellPlayed(clickedCell, clickedCellIndex);
+                handleResultValidation();
+            }
+
+            function handleCellPlayed(clickedCell, clickedCellIndex) {
+                gameState[clickedCellIndex] = currentPlayer;
+                clickedCell.textContent = currentPlayer;
+                clickedCell.classList.add(currentPlayer);
+            }
+
+            function handleResultValidation() {
+                let roundWon = false;
+                for (let i = 0; i < winningConditions.length; i++) {
+                    const winCondition = winningConditions[i];
+                    let a = gameState[winCondition[0]];
+                    let b = gameState[winCondition[1]];
+                    let c = gameState[winCondition[2]];
+
+                    if (a === '' || b === '' || c === '') {
+                        continue;
+                    }
+                    if (a === b && b === c) {
+                        roundWon = true;
+                        break;
+                    }
+                }
+
+                if (roundWon) {
+                    showWinMessage(`Игрок ${currentPlayer} победил!`);
+                    gameActive = false;
+                    return;
+                }
+
+                let roundDraw = !gameState.includes("");
+                if (roundDraw) {
+                    showWinMessage("Ничья!");
+                    gameActive = false;
+                    return;
+                }
+
+                currentPlayer = currentPlayer === "X" ? "O" : "X";
+                statusDisplay.textContent = `Ход: ${currentPlayer}`;
+            }
+
+            function showWinMessage(message) {
+                winText.textContent = message;
+                winOverlay.classList.remove('hidden');
+            }
+
+            function hideWinMessage() {
+                winOverlay.classList.add('hidden');
+            }
+
+            function handleResetGame() {
+                gameActive = true;
+                currentPlayer = "X";
+                gameState = ["", "", "", "", "", "", "", "", ""];
+                statusDisplay.textContent = `Ход: ${currentPlayer}`;
+                cells.forEach(cell => {
+                    cell.textContent = "";
+                    cell.classList.remove("X");
+                    cell.classList.remove("O");
+                });
+                hideWinMessage();
+            }
+
+            cells.forEach(cell => cell.addEventListener('click', handleCellClick));
+            resetButton.addEventListener('click', handleResetGame);
+            winRestartBtn.addEventListener('click', handleResetGame);
+        });
+    </script>
+</body>
+
+</html>
